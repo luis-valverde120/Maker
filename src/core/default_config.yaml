@@ -13,6 +13,7 @@ frameworks:
           - src/routes
           - src/views
           - src/middlewares
+          - .vscode
         files:
           "src/index.ts": |
             import express from 'express';
@@ -30,6 +31,12 @@ frameworks:
             });
           ".env": |
             PORT=3000
+          ".vscode/settings.json": |
+            {
+              "editor.tabSize": 2,
+              "editor.formatOnSave": true,
+              "editor.defaultFormatter": "esbenp.prettier-vscode"
+            }
 
   fastapi:
     language: python
@@ -45,6 +52,7 @@ frameworks:
           - app/routes
           - app/templates
           - test
+          - .vscode
         files:
           "app/main.py": |
             from fastapi import FastAPI
@@ -56,3 +64,11 @@ frameworks:
                 return {"Hello": "World from MVC"}
           ".env": |
             DATABASE_URL="example.com"
+          ".vscode/settings.json": |
+            {
+              "editor.tabSize": 4,
+              "editor.formatOnSave": true,
+              "[python]": {
+                "editor.defaultFormatter": "charliermarsh.ruff"
+              }
+            }
