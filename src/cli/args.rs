@@ -25,7 +25,7 @@ pub enum Commands {
         lang: Option<Language>,
     },
     Config {
-        #[clap(logn)]
+        #[clap(long)]
         init: bool
     }
 }
