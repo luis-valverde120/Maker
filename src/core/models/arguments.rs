@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use serde::Deserialize;
 
 pub struct Arguments {
     name: Option<String>,
@@ -5,3 +7,37 @@ pub struct Arguments {
     framework: Option<String>,
     lang: Option<String>
 }
+
+#[derive(Deserialize, Debug)]
+pub struct MakeConfig {
+    pub frameworks: HashMap<String, FrameworkConfig>,
+}
+
+impl MakeConfig {
+    pub fn get_framework(&self, name: &str) -> Option<&FrameworkConfig> {
+        self.frameworks.get(name)
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct FrameworkConfig {
+    pub language: String,
+    pub install_cmd: Vec<String>,
+    pub install_dev_cmd: Vec<String>,
+    pub dependencies: Vec<String>,
+    pub dev_dependencies: Vec<String>,
+    pub architectures: HashMap<String, ArchitectureConfig>,
+}
+
+impl FrameworkConfig {
+    pub fn get_architecture(&self, name: &str) -> Option<&ArchitectureConfig> {
+        self.architectures.get(name)
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub struct ArchitectureConfig {
+    pub folders: Vec<String>,
+    pub files: HashMap<String, String>,
+}
+
