@@ -1,0 +1,58 @@
+frameworks:
+  express:
+    language: ts
+    install_cmd: ["npm", "install"]
+    install_dev_cmd: ["npm", "install", "-D"]
+    dependencies: ["express", "cors", "dotenv"]
+    dev_dependencies: ["typescript", "ts-node", "@types/node", "@types/express"]
+    architectures:
+      mvc:
+        folders:
+          - src/controllers
+          - src/models
+          - src/routes
+          - src/views
+          - src/middlewares
+        files:
+          "src/index.ts": |
+            import express from 'express';
+            import cors from 'cors';
+            import dotenv from 'dotenv';
+            
+            dotenv.config();
+            const app = express();
+            app.use(cors());
+            app.use(express.json());
+            
+            const PORT = process.env.PORT || 3000;
+            app.listen(PORT, () => {
+              console.log(`Server running on port ${PORT}`);
+            });
+          ".env": |
+            PORT=3000
+
+  fastapi:
+    language: python
+    install_cmd: ["uv", "add"]
+    install_dev_cmd: ["uv", "add", "--dev"]
+    dependencies: ["fastapi", "uvicorn"]
+    dev_dependencies: ["pytest", "ruff"]
+    architectures:
+      mvc:
+        folders:
+          - app/controllers
+          - app/models
+          - app/routes
+          - app/templates
+          - test
+        files:
+          "app/main.py": |
+            from fastapi import FastAPI
+            
+            app = FastAPI()
+            
+            @app.get("/")
+            def read_root():
+                return {"Hello": "World from MVC"}
+          ".env": |
+            DATABASE_URL="example.com"

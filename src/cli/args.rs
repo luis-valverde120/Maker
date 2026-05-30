@@ -24,6 +24,10 @@ pub enum Commands {
         #[clap(long, value_enum)]
         lang: Option<Language>,
     },
+    Config {
+        #[clap(logn)]
+        init: bool
+    }
 }
 
 #[derive(Clone, Debug, ValueEnum)]
