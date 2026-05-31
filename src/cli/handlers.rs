@@ -1,23 +1,10 @@
 use crate::cli::args::{Cli, Commands};
+use crate::cli::handler_config;
 use dialoguer::{Confirm, Input};
 use std::process;
-use std::path::{Path, PathBuf);
+use std::path::{Path, PathBuf};
 use std::env;
 use std::fs;
-
-// file default config for frameworks and structure folders and architecture or commands use for a
-// preconfigure a project
-const CONFIGURE_YAML_BASE: &str = include_str!("../core/default_config.yaml"); 
-
-/*
- * this use to valid if the config 
- */
-fn get_config_file() -> Option<PathBuf>{
-    match dirs::config_dir() {
-        Some(path) => Some(path.join("maker").join("config.yaml")),
-        None => None,
-    }           
-}
 
 /*
  * This function valid if a name has spaces or special characters
@@ -44,49 +31,9 @@ fn is_valid_path(path_project: &str) -> bool {
     Path::new(path_project).exists()
 }
 
-/*
- * Create a functionality for generate a default configure file this use 
- * This is for functionality Config --init
- * all configuration of default
- * @path configure folder
- * */
-fn create_configure_file(path: &str) {
-    let path_config = match get_config_file() {
-        Some(path) => path,
-        None => {
-             println!("Error: not find configure folder");
-             return;
-        }
-    };
-
-    // this is already exists
-    if path_config.exists() {
-        println!("The configure is already exist");
-        return;
-    }
-
-    if let Some(path) = path_config.current() {
-        let _ = fs::create_dir_all(path);
-    }  
-
-    match fs::write(&path_config, CONFIGURE_YAML_BASE) {
-        Ok(_) => println!("Config file create sucessfully!"),
-        Err(e) => {
-            println!("Error: The configure file cannot create");
-            process::exit(1);
-        }
-    }
-}
-
-/*
- * Add functionality of handler a configure file this will be create automatically 
- * for make a this app more usefull for diferent configurations
- * @path: configure folder 
+/**
+ * Especifie a path to use
  */
-fn handler_config_file() {
-
-}
-
 fn set_path() -> String {
     let new_path: String = Input::new()
         .with_prompt("Specify the path: ")
@@ -110,7 +57,7 @@ fn set_path() -> String {
 /**
  * This is a funciton used to create a path with the name given for the user
  */
-fn handler_path(path: Option<&str>, name: &str) -> Result<String, String> {
+fn handler_path(path: Option<&str>, name: &str) -> Result<PathBuf, String> {
 
     // validate if exist a path if not exist return current path
     let selected_path = match path {
@@ -142,7 +89,8 @@ fn handler_path(path: Option<&str>, name: &str) -> Result<String, String> {
 
     match fs::create_dir(&new_path) {
         Ok(_) => {
-            Ok(format!("Create a new directory sucessfully"))
+            println!("Create a new directory sucessfully");
+            Ok(new_path)
         },
         Err(e) => {
             Err(format!("An Error has ocurrent {}", e))
@@ -155,48 +103,95 @@ fn handler_path(path: Option<&str>, name: &str) -> Result<String, String> {
  * dependencies for the project works.
  */
 fn handler_framework(framework: &str) -> Result<String, String> {
-    return Ok(format!("ok"));
+    if framework.trim().is_empty() {
+        return Err(format!("Errro"));
+    }
+    Ok(format!("ok"))
 }
 
 /*
  * This handler the command the flags that use and determine what flags is missing
+ * *New Configuration 
+ * 1. validate a name and create the folder where we work
+ * 2. Validate the config file is already exist 
+ *      In this case need Read the configure file 
+ * 3. Validate if the framework already exists describe in configure file
+ * 4. Get language for this configuration
+ * 5. Init project using the framework 
+ * 6. Install all dependencies and dev_dependencies 
+ * 7. Generate a structure of folder
+ *
+ *
+ * Especial cases
+ * Javascript
+ * this need to aclare the language used this case use Javascript or Typescript
  */
 pub fn handler_command(cli: Cli) -> Result<(), String> {
 
     match &cli.command {
         Commands::New { name, path, framework, arch, lang } => {
 
+            let framework_selected = match framework {
+                Some(f) => f,
+                None => &String::from(""),
+            };
+
+            let architecture_selected = match arch {
+                Some(a) => a,
+                None => &String::from(""),
+            };
+
+            let language_selected = match lang {
+                Some(l) => l,
+                None => &String::from(""),
+            };
+
             if !is_valid_name(&name) {
                 println!("Error with name {}, this is not valid", name);
-                process::exit(1);
+                process::exit(0);
             }
 
-            println!("Create a new project {}", name);
-
-            match handler_path(path.as_deref(), &name) {
-                Ok(result) => {
-                    println!("{}", result);
-                },
+            let path_project: PathBuf = match handler_path(path.as_deref(), &name) {
+                Ok(path) => path,
                 Err(e) => {
                     println!("Error {}", e);    
                     process::exit(1);
                 }
+            };
+
+            /*
+            let mut project = match handler_config::handle_config(
+                framework_selected, 
+                architecture_selected, 
+                language_selected
+            ) {
+                Some(p) => p,
+                None => ProjectExecution{}, 
+            };
+            */
+
+            if let Some(_) = handler_config::handle_config(
+                name,
+                path_project,
+                framework_selected,
+                architecture_selected,
+                language_selected
+            ) {
+                println!("Ok");
             }
 
-            match handler_framework(framework) {
-                Ok(result) => {
-                    println!("{}", result); 
-                }
-            }
+            println!("Creating a new project {} ...", name);
+
+            
+            
        },
        Commands::Config { init } => {
-           if !init => {
+           if !init {
                println!("You need add the flag --init");
                process::exit(0);
            }
             
-           handler_config_file();
-
+           handler_config::create_configure_file();
        }
    } 
    Ok(())
