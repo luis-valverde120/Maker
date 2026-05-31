@@ -10,7 +10,7 @@ Traditional project generators are rigid. If you want to add support for a new f
 
 * **Agnostic Engine:** The Rust core doesn't know what Python, TypeScript, Express, or FastAPI are. It simply parses rules and executes them.
 * **Infinite Scalability:** Add new languages, frameworks, or dependencies just by updating the `config.yaml` file. No Rust compilation required.
-* **Offline First:** The default configuration is seamlessly embedded directly into the binary, ensuring zero-latency project generation even without an internet connection.
+* **Offline First:** The default configuration is seamlessly embedded into the binary using an internal `.zip` archive. This ensure zero=latency project generation, even without an internet connection.
 
 ## Core Features & Architecture
 
@@ -49,23 +49,21 @@ In the file config.yaml we have a section for add or modify a framework
           - test
           - .vscode
         files:
-          "app/main.py": |
-            # Code initial
+          "app/main.py": "maker-templates/../template"
 ```
 
-### modify dependencies for a project
-This have a specific fields that to execute a command install_cmd this use for execute a package install for exmaple python using `uv`
-And for add more dependencies or development dependencies we have 2 field that are `dependencies` and `dev_dependencies` for especifies a libraries to add in this project
+### modifying Project Dependencies
+Maker uses specific field to handle package managers. The `install_cmd` defines the base installation command (e.g., using `uv` for Python). To specify the libraries that should be installed, simply add them to the `dependencies` and `dev_dependenciesl` arrays:
 
 ```YAML
     install_cmd: ["uv", "add"]
     install_dev_cmd: ["uv", "add", "--dev"]
-    dependencies: ["fastapi", "uvicorn", "SqlAlchemy", .., etc]
+    dependencies: ["fastapi", "uvicorn", "SqlAlchemy"]
     dev_dependencies: ["pytest", "ruff"]
 ```
 
-### Add another architectures
-In the section to `architectures` we can add more architectures and modify the structure of folders of this 
+### Adding Custom Architectures
+Under the `architectures` section, you can define multiple architectural patterns and specify their excat folder structures:
 
 ```YAML
     architectures:
@@ -81,4 +79,3 @@ In the section to `architectures` we can add more architectures and modify the s
           - internal/ports
           - internal/adapters
 ```
-

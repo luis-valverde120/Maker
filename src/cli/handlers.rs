@@ -85,7 +85,7 @@ fn create_architecture_folder(folders: &Vec<String>, path: &PathBuf, spinner: &P
                 spinner.set_message(format!("Creating: {}", folder));
             },
             Err(e) => {
-                eprintln!("Error {}", e);
+                spinner.abandon_with_message(format!("Process Canceled: \n{}", e))
                 process::exit(1);
             }
         };
@@ -152,11 +152,6 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 None => use_current_dir(),
             };
 
-            if !prompt::validate_configure_project() {
-                println!("Canceling...");
-                process::exit(0);
-            };
-
             let spinner = ProgressBar::new_spinner();
 
             spinner.set_style(
@@ -176,6 +171,11 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 architecture_selected,
                 language_selected
             );
+            
+            if !prompt::validate_configure_project(&configure) {
+                println!("Canceling...");
+                process::exit(0);
+            };
 
             spinner.set_message(format!("Create a folder project {}", name))
 
@@ -183,7 +183,7 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
             match handler_path(&path_selected.join(name)) {
                 Ok() => println!("Succesfully create folder");,
                 Err(e) => {
-                    println!("Error {}", e);    
+                    spinner.abandon_with_message("Process Canceled: {}", e)
                     process::exit(1);
                 }
             };

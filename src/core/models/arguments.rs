@@ -8,7 +8,7 @@ pub struct Arguments {
     lang: Option<String>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct MakeConfig {
     pub frameworks: HashMap<String, FrameworkConfig>,
 }
@@ -19,7 +19,7 @@ impl MakeConfig {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct FrameworkConfig {
     pub language: String,
     pub install_cmd: Vec<String>,
@@ -35,7 +35,7 @@ impl FrameworkConfig {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ArchitectureConfig {
     pub folders: Vec<String>,
     pub files: HashMap<String, String>,
