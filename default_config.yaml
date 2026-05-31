@@ -1,0 +1,40 @@
+frameworks:
+  express:
+    language: ts
+    install_cmd: ["npm", "install"]
+    install_dev_cmd: ["npm", "install", "-D"]
+    dependencies: ["express", "cors", "dotenv"]
+    dev_dependencies: ["typescript", "ts-node", "@types/node", "@types/express"]
+    architectures:
+      mvc:
+        folders:
+          - src/controllers
+          - src/models
+          - src/routes
+          - src/views
+          - src/middlewares
+          - .vscode
+        files:
+          "src/index.ts": "maker-templates/express/index.js"
+          ".env": "maker-templates/shared/.env"
+          ".vscode/settings.json": "maker-templates/shared/.vscode/settings.json"
+
+  fastapi:
+    language: python
+    install_cmd: ["uv", "add"]
+    install_dev_cmd: ["uv", "add", "--dev"]
+    dependencies: ["fastapi", "uvicorn"]
+    dev_dependencies: ["pytest", "ruff"]
+    architectures:
+      mvc:
+        folders:
+          - app/controllers
+          - app/models
+          - app/routes
+          - app/templates
+          - test
+          - .vscode
+        files:
+          "app/main.py": "maker-templates/fastapi/index.js"
+          ".env": "maker-templates/shared/.env"
+          ".vscode/settings.json": "maker-templates/shared/.vscode/settings.json"

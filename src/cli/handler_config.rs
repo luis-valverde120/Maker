@@ -80,7 +80,7 @@ fn read_config_file(path: &str) -> Result<MakeConfig, serde_yaml::Error> {
  * 4. Find configurations given for the User is describe in file
  * 5. 
  */
-pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, architecture: &str, lang: &str) -> Option<ProjectExecution> {
+pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, architecture: &str, lang: &str) -> ProjectExecution {
     // valide config file already exists
     let path_config = match get_config_file() {
         Some(path) => path,
@@ -114,7 +114,7 @@ pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, archit
         }
     }
 
-    Some(ProjectExecution {
+    ProjectExecution {
         name: project_name.to_string(),
         absolute_path: path.clone(),
         language: framework_conf.to_string(),
