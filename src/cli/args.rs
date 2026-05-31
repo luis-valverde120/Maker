@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -15,38 +15,18 @@ pub enum Commands {
         #[clap(long)]
         path: Option<String>,
 
-        #[clap(short, long, value_enum)]
-        framework: Option<Framework>,
+        #[clap(short, long)]
+        framework: Option<String>,
 
-        #[clap(short, long, value_enum)]
-        arch: Option<Architecture>,
+        #[clap(short, long)]
+        arch: Option<String>,
 
-        #[clap(long, value_enum)]
-        lang: Option<Language>,
+        #[clap(long)]
+        lang: Option<String>,
     },
     Config {
         #[clap(long)]
         init: bool
     }
-}
-
-#[derive(Clone, Debug, ValueEnum)]
-pub enum Framework  {
-    Express,
-    FastApi,
-}
-
-#[derive(Clone, Debug, ValueEnum)]
-pub enum Architecture {
-    Mvc,
-    Hexagonal,
-    Ddd,
-}
-
-// this is just for use a express framework
-#[derive(Clone, Debug, ValueEnum)]
-pub enum Language { 
-    Ts,
-    Js,
 }
 
