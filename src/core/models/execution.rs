@@ -10,6 +10,8 @@ pub struct ProjectExecution {
     pub framework: String,
     
     // commands
+    pub init_cmd: Option<Vec<String>>,
+    pub script: Option<Vec<String>>,
     pub install_cmd: Vec<String>,
     pub install_dev_cmd: Vec<String>,
     pub dependencies: Vec<String>,

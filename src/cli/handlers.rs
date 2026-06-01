@@ -1,6 +1,11 @@
 use crate::cli::args::{Cli, Commands};
 use crate::core::models::execution::{ProjectExecution};
 use crate::core::models::arguments::{ArchitectureConfig};
+use crate::generators::{
+    create_architecture_folder, 
+    create_architecture_files,
+    install_commands
+};
 use crate::cli::handler_config;
 use crate::cli::prompt;
 use dialoguer::{Confirm, Input};
@@ -71,30 +76,6 @@ fn handler_path(path: PathBuf) -> Result<(), String> {
         Err(e) => {
             Err(format!("An Error has ocurrent {}", e))
         }
-    }
-}
-
-/**
- * Create a structure of folder inside of path of project
- */
-fn create_architecture_folder(folders: &Vec<String>, path: &PathBuf, spinner: &ProgressBar) {
-    for folder in folders {
-        let new_folder = path.join(folder);
-        match fs::create_dir_all(new_folder) {
-            Ok(_) => {
-                spinner.set_message(format!("Creating: {}", folder));
-            },
-            Err(e) => {
-                spinner.abandon_with_message(format!("Process Canceled: \n{}", e))
-                process::exit(1);
-            }
-        };
-    }
-}
-
-fn create_architecture_files(files: &Vec<String>, path: &PathBuf, spinner: &ProgressBar) {
-    for file in files {
-        // i need a path from files no a content
     }
 }
 
@@ -188,14 +169,38 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 }
             };
 
-            spinner.set_message(format!("Create structure folder from architecture {}", architecture_selected))
+            spinner.set_message(format!("Create structure folder from architecture {}", architecture_selected));
 
             // create structure from architectur
             create_architecture_folder(&configure.architecture.folders, &configure.absolute_path, &spinner);
             
-            spinner.set_message(format!("Create files for project"))
+            spinner.set_message(format!("Create files for project"));
+
             // create structure of files
             create_architecture_files(&configure.architecture.files, &configure.absolute_path, &spinner);
+
+            spinner.set_message(format!("Initialization project"));
+
+            // initialization project
+            install_commands(&configure.framework.init_cmd, format!("Initialization"), &configure.absolute_path, &spinner);
+
+            spinner.set_message(format!("Installing dependencies"));
+
+            // install dependencies
+            let mut command_dependencies = &configure.framework.install_cmd.clone();
+            command_dependencies.extend(configure.framework.dependencies.clone());
+
+            install_commands(&command_dependencies, format!("Dependencies"), &configure.absolute_path);
+
+            // install dev dependencies
+
+            let mut command_dev_dependencies = &configure.framework.install_dev_cmd.clone();
+            command_dependencies.expend(configure.framework.dev_dependencies.clone());
+
+            install_commands(&command_dev_dependencies, format!("Developer Dependencies"), &configure.absolute_path);
+
+
+
 
        },
        Commands::Config { init } => {

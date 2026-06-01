@@ -22,6 +22,8 @@ impl MakeConfig {
 #[derive(Deserialize, Debug, Clone)]
 pub struct FrameworkConfig {
     pub language: String,
+    pub init_cmd: Option<Vec<String>>,
+    pub scripts: Option<Vec<String>>
     pub install_cmd: Vec<String>,
     pub install_dev_cmd: Vec<String>,
     pub dependencies: Vec<String>,

@@ -120,6 +120,8 @@ pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, archit
         language: framework_conf.to_string(),
 
         // install dependencies
+        init_cmd: framework_conf.init_cmd.clone(),
+        scripts: framework_conf.scripts.clone(),
         install_cmd: framework_conf.install_cmd.clone(),
         install_dev_cmd: framework_conf.install_dev_cmd.clone(),
         dependencies: framework_conf.dependencies.clone(),
