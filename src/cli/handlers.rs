@@ -199,9 +199,6 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
 
             install_commands(&command_dev_dependencies, format!("Developer Dependencies"), &configure.absolute_path);
 
-
-
-
        },
        Commands::Config { init } => {
            if !init {

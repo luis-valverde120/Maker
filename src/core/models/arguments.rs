@@ -23,7 +23,11 @@ impl MakeConfig {
 pub struct FrameworkConfig {
     pub language: String,
     pub init_cmd: Option<Vec<String>>,
-    pub scripts: Option<Vec<String>>
+
+    pub scripts_file: Option<String>>,
+    pub scripts_section: Option<String>,
+    pub scripts: Option<HashMap<String, String>>,
+
     pub install_cmd: Vec<String>,
     pub install_dev_cmd: Vec<String>,
     pub dependencies: Vec<String>,

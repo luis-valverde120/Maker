@@ -2,6 +2,8 @@ frameworks:
   express:
     language: ts
     init_cmd: ["npm", "init", "-y"]
+    scripts_file: "package.json"
+    scripts_section: "scripts"
     scripts:
       dev: "nodemon"
       build: "tsc"

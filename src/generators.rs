@@ -2,6 +2,7 @@ use std::path::Path;
 use std::fs;
 use std::process;
 use std::collections::HashMap;
+use serde_json::{Value, Map};
 
 /**
  * Create a structure of folder inside of path of project
@@ -83,4 +84,86 @@ pub fn install_commands(commands: &Vec<String>, type_command: &str, path: &PathB
                 format!("Error: {}", e)
             }
         }
+}
+
+/*
+ * Add script in file if this is necesarry
+ */
+pub fn add_scripts(script: &HashMap<String, String>, field: &String, target_file: &PathBuf, path: &PathBuf, spinner: &ProgressBar) {
+
+    let target = path.join(target_file);
+
+    let extension = match target_file.extension() {
+        Some(ext) => ext.to_string(),
+        None => ""
+    }
+
+    spinner.set_message(format!("Find file {}", target.display()));
+
+    match extension {
+        "json" => {
+            inject_script_to_json(script, field, target, spinner);
+        },
+        "toml" => {
+            inject_script_to_toml(script, field, target, spinner);
+        },
+        _ => {
+            println!("Functionality for this type of file configure is not implemented yet");
+        }
+    }
+}
+
+fn inject_script_to_toml(script: &HashMap<String, String>, field: &str, target_file: &PathBuf, spinner &ProgressBar) {
+
+    let content = match fs::read_to_string(target_file) {
+        Ok(value) => value,
+        Err(e) => {
+            spinner.abandon_with_message(format!("Error to read file {}", e));
+            process::exit(1);
+        },
+    }
+
+    let mut document = content.parse::<DocumentMut>();
+}
+
+
+fn inject_script_to_json(script: &HashMap<String, String>, field: &str, target_file: &PathBuf, spinner: &ProgressBar) {
+
+    let mut json: Value = match serde_json::from_str(target_file) {
+        Ok(value) => value,
+        Err(e) => {
+            println!("Error with read file");
+            process::exit(1);
+        },
+    };
+
+    if let Some(obj) = json.as_object_mut() {
+        let script_block = obj.entry(field)
+            .or_insert_with(|| Value::Object(Map::new()))
+            .os_object_mut()
+            .unwrap();
+
+        for (key, value) in script {
+            script_block.insert(key.clone(), Value::String(value.clone()));
+        }
+    }
+    
+
+    let json_update = match serde_json::to_string_pretty(&json) {
+        Ok(json_file_update) => json_file_update,
+        Err(e) => {
+            spinner.abandon_with_message(format!("Error with update json {}", e));
+            process::exit(1);
+        },
+    };
+
+    match fs::write(target_file, json_update) {
+        Ok(_) {
+            spinner.set_message(format!("Update complete file"));
+        },
+        Err(e) {
+            spinner.abandon_with_message(format!("Error for write file {}", e));
+        },
+    };
+
 }
