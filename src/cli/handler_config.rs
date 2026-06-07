@@ -6,7 +6,7 @@ use std::process;
 
 // file default config for frameworks and structure folders and architecture or commands use for a
 // preconfigure a project
-const CONFIGURE_YAML_BASE: &str = include_str!("../core/default_config.yaml"); 
+const CONFIGURE_YAML_BASE: &str = include_str!("../.././default_config.yaml"); 
 
 /*
  * this use to valid if the config 
@@ -45,7 +45,7 @@ pub fn create_configure_file() {
 
     match fs::write(&path_config, CONFIGURE_YAML_BASE) {
         Ok(_) => println!("Config file create sucessfully!"),
-        Err(e) => {
+        Err(_) => {
             println!("Error: The configure file cannot create");
             process::exit(1);
         }
@@ -66,10 +66,7 @@ fn read_config_file(path: &str) -> Result<MakeConfig, serde_yaml::Error> {
         }
     };
 
-    match serde_yaml::from_str(&config_file_content) {
-        Ok(conf) => conf,
-        Err(e) => e,
-    }
+    serde_yaml::from_str(&config_file_content)
 }
 
 /*
@@ -99,35 +96,42 @@ pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, archit
     };
 
     let framework_conf: FrameworkConfig = match config.get_framework(framework) {
-        Some(f) => f,
+        Some(f) => f.clone(),
         None => {
             println!("Framework is not specified in config.yaml");
             process::exit(0);
         }
-    }  
+    };
 
-    let architecture_conf = match framework.get_architecture(architecture) {
+    let architecture_conf = match framework_conf.get_architecture(&architecture) {
         Some(a) => a,
         None => {
             println!("Architecture is not specified in config.yaml");
             process::exit(0);
         }
-    }
+    };
 
     ProjectExecution {
         name: project_name.to_string(),
         absolute_path: path.clone(),
-        language: framework_conf.to_string(),
+        language: framework_conf.language.clone(),
+
+        framework: framework.to_string(),
 
         // install dependencies
         init_cmd: framework_conf.init_cmd.clone(),
-        scripts: framework_conf.scripts.clone(),
         install_cmd: framework_conf.install_cmd.clone(),
         install_dev_cmd: framework_conf.install_dev_cmd.clone(),
         dependencies: framework_conf.dependencies.clone(),
         dev_dependencies: framework_conf.dev_dependencies.clone(),
 
+        //scripts
+        scripts_file: framework_conf.scripts_file.clone(),
+        scripts_section: framework_conf.scripts_section.clone(),
+        scripts: framework_conf.scripts.clone(),
+
         // architecture
+        architecture_name: architecture.to_string(), 
         architecture: architecture_conf.clone(),
-    })
+    }
 }

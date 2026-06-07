@@ -25,7 +25,7 @@ pub struct ProjectExecution {
     // scripts
     pub scripts_file: Option<String>,
     pub scripts_section: Option<String>,
-    pub script: Option<HashMap<String, String>>,
+    pub scripts: Option<HashMap<String, String>>,
 
     pub install_cmd: Vec<String>,
     pub install_dev_cmd: Vec<String>,
@@ -33,5 +33,6 @@ pub struct ProjectExecution {
     pub dev_dependencies: Vec<String>,
 
     // structure
+    pub architecture_name: String,
     pub architecture: ArchitectureConfig,
 }   

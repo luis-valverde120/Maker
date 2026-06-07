@@ -1,13 +1,6 @@
 use std::collections::HashMap;
 use serde::Deserialize;
 
-pub struct Arguments {
-    name: Option<String>,
-    path: Option<String>,
-    framework: Option<String>,
-    lang: Option<String>
-}
-
 #[derive(Deserialize, Debug, Clone)]
 pub struct MakeConfig {
     pub frameworks: HashMap<String, FrameworkConfig>,
@@ -24,7 +17,7 @@ pub struct FrameworkConfig {
     pub language: String,
     pub init_cmd: Option<Vec<String>>,
 
-    pub scripts_file: Option<String>>,
+    pub scripts_file: Option<String>,
     pub scripts_section: Option<String>,
     pub scripts: Option<HashMap<String, String>>,
 

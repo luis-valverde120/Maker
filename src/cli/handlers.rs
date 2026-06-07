@@ -1,15 +1,15 @@
 use crate::cli::args::{Cli, Commands};
 use crate::core::models::execution::{ProjectExecution};
-use crate::core::models::arguments::{ArchitectureConfig};
 use crate::generators::{
     create_architecture_folder, 
     create_architecture_files,
-    install_commands
+    install_commands,
+    add_scripts,
 };
 use crate::cli::handler_config;
 use crate::cli::prompt;
-use dialoguer::{Confirm, Input};
-use indicatif::{ProgressBar, ProgressStyle}
+use dialoguer::{Confirm};
+use indicatif::{ProgressBar, ProgressStyle};
 use std::process;
 use std::path::{Path, PathBuf};
 use std::env;
@@ -67,7 +67,7 @@ fn use_current_dir() -> PathBuf {
 /**
  * This is a funciton used to create a path with the name given for the user
  */
-fn handler_path(path: PathBuf) -> Result<(), String> {
+fn handler_path(path: &PathBuf) -> Result<(), String> {
     match fs::create_dir(&path) {
         Ok(_) => {
             println!("Create a new directory sucessfully");
@@ -130,7 +130,7 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                         process::exit(0);
                     }
                 },
-                None => use_current_dir(),
+                None => &use_current_dir(),
             };
 
             let spinner = ProgressBar::new_spinner();
@@ -144,10 +144,10 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
 
             spinner.set_message(format!("Charge the configuration from config.yaml"));
 
-            // Chare configure
+            // Charge configure
             let configure: ProjectExecution  = handler_config::handle_config(
                 name,
-                path_project,
+                &path_selected.to_path_buf(),
                 framework_selected,
                 architecture_selected,
                 language_selected
@@ -158,13 +158,13 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 process::exit(0);
             };
 
-            spinner.set_message(format!("Create a folder project {}", name))
+            spinner.set_message(format!("Create a folder project {}", name));
 
             // create a project
             match handler_path(&path_selected.join(name)) {
-                Ok() => println!("Succesfully create folder");,
+                Ok(_) => println!("Succesfully create folder"),
                 Err(e) => {
-                    spinner.abandon_with_message("Process Canceled: {}", e)
+                    spinner.abandon_with_message(format!("Process Canceled: {}", e));
                     process::exit(1);
                 }
             };
@@ -181,23 +181,63 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
 
             spinner.set_message(format!("Initialization project"));
 
+            let init_cmd = match &configure.init_cmd {
+                Some(cmd) => cmd,
+                None => {
+                    spinner.set_message(format!("No initialization command for this framework"));
+                    &vec![]
+                }
+            };
+
             // initialization project
-            install_commands(&configure.framework.init_cmd, format!("Initialization"), &configure.absolute_path, &spinner);
+            if !init_cmd.is_empty() {
+                let _ = install_commands(init_cmd, &format!("Initialization"), &configure.absolute_path);
 
-            spinner.set_message(format!("Installing dependencies"));
+                spinner.set_message(format!("Installing dependencies and dev_dependencies"));
+                
+                // install dependencies
+                let command_dependencies = &mut configure.install_cmd.clone();
+                command_dependencies.extend(configure.dependencies.clone());
 
-            // install dependencies
-            let mut command_dependencies = &configure.framework.install_cmd.clone();
-            command_dependencies.extend(configure.framework.dependencies.clone());
+                let _ = install_commands(&command_dependencies, &format!("Dependencies"), &configure.absolute_path);
 
-            install_commands(&command_dependencies, format!("Dependencies"), &configure.absolute_path);
+                // install dev dependencies
 
-            // install dev dependencies
+                let command_dev_dependencies = &mut configure.install_dev_cmd.clone();
+                command_dependencies.extend(configure.dev_dependencies.clone());
 
-            let mut command_dev_dependencies = &configure.framework.install_dev_cmd.clone();
-            command_dependencies.expend(configure.framework.dev_dependencies.clone());
+                let _ = install_commands(&command_dev_dependencies, &format!("Developer Dependencies"), &configure.absolute_path);
+            }
 
-            install_commands(&command_dev_dependencies, format!("Developer Dependencies"), &configure.absolute_path);
+            spinner.set_message(format!("Adding scripts in configuration file"));
+
+            // add scripts in a file configuration for JSON or TOML
+            
+            // validate path of script file
+            let scripts_file = match &configure.scripts_file {
+                Some(sf) => sf,
+                None => {
+                    spinner.finish_with_message(format!("Project created {} successfully", name));
+                    return Ok(());
+                },
+            };
+
+            let scripts_section = match &configure.scripts_section {
+                Some(ss) => ss,
+                None => &String::from("scripts"),
+            };
+
+            let scripts = match &configure.scripts {
+                Some(s) => s,
+                None => {
+                    spinner.finish_with_message(format!("Project created {} successfully", name));
+                    return Ok(());
+                },
+            };
+
+            add_scripts(&scripts, &scripts_section, scripts_file, &configure.absolute_path, &spinner); 
+
+            spinner.finish_with_message(format!("Project {} created successfully", name));
 
        },
        Commands::Config { init } => {
