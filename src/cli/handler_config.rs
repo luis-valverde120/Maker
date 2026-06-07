@@ -113,7 +113,7 @@ pub fn handle_config(project_name: &str, path: &PathBuf, framework: &str, archit
 
     ProjectExecution {
         name: project_name.to_string(),
-        absolute_path: path.clone(),
+        absolute_path: path.join(project_name),
         language: framework_conf.language.clone(),
 
         framework: framework.to_string(),
