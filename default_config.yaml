@@ -10,8 +10,8 @@ frameworks:
       start: "node dist/index.js"
     install_cmd: ["npm", "install"]
     install_dev_cmd: ["npm", "install", "-D"]
-    dependencies: ["express", "cors", "dotenv"]
-    dev_dependencies: ["typescript", "ts-node", "@types/node", "@types/express"]
+    dependencies: ["express", "cors", "dotenv", "morgan", "helmet", "cookie-parser"]
+    dev_dependencies: ["typescript", "ts-node", "@types/node", "@types/express", "nodemon", "@types/cors", "@types/morgan", "@types/cookie-parser"]
     architectures:
       mvc:
         folders:
@@ -22,9 +22,14 @@ frameworks:
           - src/middlewares
           - .vscode
         files:
-          "src/index.ts": "maker-templates/express/index.js"
+          "src/index.ts": "maker-templates/express/mvc/index.ts"
           ".env": "maker-templates/shared/.env"
           ".vscode/settings.json": "maker-templates/shared/.vscode/settings.json"
+          "nodemon.json": "maker-templates/express/mvc/nodemon.json"
+          "tsconfig.json": "maker-templates/express/mvc/tsconfig.json"
+          "src/routes/index.ts": "maker-templates/express/mvc/routes/index.routes.ts"
+          "src/controllers/index.controller.ts": "maker-templates/express/mvc/controllers/index.controller.ts"
+          "src/middlewares/index.middleware.ts": "maker-templates/express/mvc/middlewares/index.middleware.ts"
 
   fastapi:
     language: python

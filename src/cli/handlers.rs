@@ -139,7 +139,7 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 ProgressStyle::default_spinner().template("{spinner.green} {msg}").unwrap(),
             );
 
-            spinner.enable_steady_tick(Duration::from_millis(100));
+            spinner.enable_steady_tick(Duration::from_millis(300));
 
 
             spinner.set_message(format!("Charge the configuration from config.yaml"));
@@ -164,7 +164,7 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
             match handler_path(&path_selected.join(name)) {
                 Ok(_) => println!("Succesfully create folder"),
                 Err(e) => {
-                    spinner.abandon_with_message(format!("Process Canceled: {}", e));
+                    spinner.abandon_with_message(format!("Process Canceled: Error with path {}", e));
                     process::exit(1);
                 }
             };
@@ -181,17 +181,24 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
 
             spinner.set_message(format!("Initialization project"));
 
-            let init_cmd = match &configure.init_cmd {
-                Some(cmd) => cmd,
+            let init_cmd: Vec<String> = match &configure.init_cmd {
+                Some(cmd) => {
+                    if let Ok(_) = install_commands(cmd, &format!("Initialization"), &configure.absolute_path) {
+                        cmd.clone()
+                    } else {
+                        spinner.abandon_with_message(format!("Process Canceled: Error with initialization command"));
+                        process::exit(1);
+                    }
+                },
                 None => {
                     spinner.set_message(format!("No initialization command for this framework"));
-                    &vec![]
+                    Vec::new()
                 }
             };
 
             // initialization project
             if !init_cmd.is_empty() {
-                let _ = install_commands(init_cmd, &format!("Initialization"), &configure.absolute_path);
+                let _ = install_commands(&init_cmd, &format!("Initialization"), &configure.absolute_path);
 
                 spinner.set_message(format!("Installing dependencies and dev_dependencies"));
                 
@@ -235,6 +242,7 @@ pub fn handler_command(cli: Cli) -> Result<(), String> {
                 },
             };
 
+            println!("absolute path {} ", configure.absolute_path.display());
             add_scripts(&scripts, &scripts_section, scripts_file, &configure.absolute_path, &spinner); 
 
             spinner.finish_with_message(format!("Project {} created successfully", name));

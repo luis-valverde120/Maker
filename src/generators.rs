@@ -71,16 +71,29 @@ pub fn install_commands(commands: &Vec<String>, type_command: &str, path: &PathB
         return Ok(());
     }
 
-    let out = process::Command::new(&commands[0])
+    let mut cmd = if cfg!(target_os = "windows") {
+        let mut c = process::Command::new("cmd");
+        c.arg("/C").arg(commands.join(" "));
+        c
+    } else {
+        let mut c = process::Command::new(&commands[0]);
+        c.args(&commands[1..]);
+        c
+    };
+
+    let out = cmd
         .current_dir(path)
-        .args(&commands[1..])
         .output()
         .map_err(|e| format!("Failed to execute command '{}': {}", commands.join(" "), e))?;
 
     if !out.status.success() {
         let err_msg = String::from_utf8_lossy(&out.stderr);
+        let err_log = format!("Command '{}' failed with error: {}", commands.join(" "), err_msg);
+
         println!("Error installing {}: {}", type_command, err_msg);
         println!("\nInstall command later using: {}", commands.join(" "));
+
+        return Err(err_log);
     }
 
     Ok(())
@@ -118,7 +131,7 @@ fn inject_script_to_toml(script: &HashMap<String, String>, field: &str, target_f
     let content = match fs::read_to_string(target_file) {
         Ok(val) => val,
         Err(e) => {
-            spinner.abandon_with_message(format!("Error to read file {}", e));
+            spinner.abandon_with_message(format!("Error to read file {}: Error {}", target_file.display(), e));
             process::exit(1);
         },
     };
